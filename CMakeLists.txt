@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(volta_base)
+project(volta_hardware)
 
 add_compile_options(-std=c++11)
 
@@ -25,9 +25,12 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 INCLUDE_DIRS include
 CATKIN_DEPENDS hardware_interface volta_msgs roscpp sensor_msgs
-DEPENDS Boost )
+DEPENDS Boost
+)
+
 include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11;")
+
 add_library(volta_hardware src/volta_hardware.cpp)
 add_executable(volta_base src/volta_base.cpp)
 target_link_libraries(volta_base volta_hardware ${catkin_LIBRARIES} ${Boost_LIBRARIES})
