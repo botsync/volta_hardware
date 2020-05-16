@@ -9,7 +9,7 @@
 #include <string>
 #include "sensor_msgs/JointState.h"
 
-#include <volta_base/constants.h>
+#include <volta_hardware/constants.h>
 
 
 #include "std_msgs/Int16.h"
@@ -19,10 +19,10 @@ namespace volta_base {
 class voltaHardware: public hardware_interface::RobotHW {
 public:
     voltaHardware(ros::NodeHandle nh, ros::NodeHandle private_nh, double target_control_freq);
-	
+
 	void rpmCallback(const volta_msgs::RPM::ConstPtr& rpmTemp);
-		
-	
+
+
     void update_encoder_readings_to_joints();
     void send_velocity_to_motors_from_joints();
     void register_controllers();
@@ -31,15 +31,15 @@ private:
 	uint8_t timeFlag;
 	int16_t prevRPMLeft,prevRPMRight;
 	int16_t	subMotorRPMRight,subMotorRPMLeft , pubMotorRPMRight,pubMotorRPMLeft;
-	
+
 	ros::Publisher rpm_pub ;
 	ros::Subscriber rpm_sub ;
-	
+
     void set_speeds(double left, double right);
     void limit_speeds(int16_t &left, int16_t &right);
     double convert_rpm_to_radians(double rpm);
     double convert_radians_to_rpm(double radians);
-    
+
     hardware_interface::JointStateInterface joint_state_interface_;
     hardware_interface::VelocityJointInterface velocity_joint_interface_;
 
@@ -66,4 +66,3 @@ private:
 }
 
 #endif
-

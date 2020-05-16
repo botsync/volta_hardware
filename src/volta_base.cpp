@@ -1,4 +1,4 @@
-#include <volta_base/volta_hardware.h>
+#include <volta_hardware/volta_hardware.h>
 #include <controller_manager/controller_manager.h>
 #include <ros/callback_queue.h>
 
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 ROS_ERROR("Start -------------------------------------------");
     ros::init(argc, argv, "volta_base");
     ros::NodeHandle nh, private_nh("~");
-    
+
     double control_freq;
     private_nh.param<double>("control_frequency", control_freq, 10.0);
     volta_base::voltaHardware volta(nh, private_nh, control_freq);
@@ -45,4 +45,3 @@ ROS_ERROR("Start -------------------------------------------");
 
     return 0;
 }
-

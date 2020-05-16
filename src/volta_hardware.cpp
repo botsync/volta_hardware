@@ -1,4 +1,4 @@
-#include <volta_base/volta_hardware.h>
+#include <volta_hardware/volta_hardware.h>
 #include <boost/assign/list_of.hpp>
 
 
@@ -24,10 +24,10 @@ voltaHardware::voltaHardware(ros::NodeHandle nh, ros::NodeHandle private_nh, dou
 	prevRPMRight=0;
 	subMotorRPMRight = 0;
 	subMotorRPMLeft = 0;
-	
+
 	pubMotorRPMRight=0;
 	pubMotorRPMLeft=0;
-	
+
 	this->rpm_pub = nh.advertise<volta_msgs::RPM>("RPM_PUB", 100);
 	this->rpm_sub = nh.subscribe("RPM_SUB", 100, &voltaHardware :: rpmCallback,this);
 	ROS_ERROR("REGISTER CONTROLLERS");
@@ -75,19 +75,19 @@ void voltaHardware::update_encoder_readings_to_joints() {
     }
 }
 
-void voltaHardware::send_velocity_to_motors_from_joints() { 
+void voltaHardware::send_velocity_to_motors_from_joints() {
 	volta_msgs :: RPM rpm;
-	int16_t rpm_left, rpm_right;  
-	
+	int16_t rpm_left, rpm_right;
+
     	double left = this->joints_[0].velocity_command;
     	double right = this->joints_[1].velocity_command;
-	
+
 	//ROS_ERROR("SET radian left: %lf, RPM right: %lf", left, right);
 	rpm_left = (int16_t)convert_radians_to_rpm(left);
         rpm_right = (int16_t)convert_radians_to_rpm(right);
 
 	this->limit_speeds(rpm_left, rpm_right);
-	
+
 	rpm.right=rpm_right;
 	rpm.left = rpm_left;
 	if(rpm.left > 0 || rpm.right >0)
@@ -98,7 +98,7 @@ void voltaHardware::send_velocity_to_motors_from_joints() {
 //	ROS_ERROR("SET RPM left: %d, RPM right: %d", rpm_right, rpm_right);
 	}
 	this->rpm_pub.publish(rpm);
-    
+
 }
 
 void voltaHardware::set_speeds(double left, double right) {
@@ -150,4 +150,3 @@ double voltaHardware::convert_radians_to_rpm(double radians) {
     return ret;
 }
 }
-
