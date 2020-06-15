@@ -75,7 +75,8 @@ void voltaHardware::update_encoder_readings_to_joints() {
     }
 }
 
-void voltaHardware::send_velocity_to_motors_from_joints() {
+void voltaHardware::send_velocity_to_motors_from_joints()
+{
 	volta_msgs :: RPM rpm;
 	int16_t rpm_left, rpm_right;
 
@@ -132,6 +133,9 @@ void voltaHardware::set_speeds(double left, double right) {
 	*/
 }
 
+
+
+
 void voltaHardware::limit_speeds(int16_t &left, int16_t &right) {
     int16_t temp_max = std::max(std::abs(left), std::abs(right));
     if (temp_max > this->max_rpm_) {
@@ -150,3 +154,4 @@ double voltaHardware::convert_radians_to_rpm(double radians) {
     return ret;
 }
 }
+

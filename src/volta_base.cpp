@@ -22,12 +22,11 @@ int main(int argc, char *argv[]) {
 ROS_ERROR("Start -------------------------------------------");
     ros::init(argc, argv, "volta_base");
     ros::NodeHandle nh, private_nh("~");
-
+    
     double control_freq;
-    private_nh.param<double>("control_frequency", control_freq, 10.0);
+    private_nh.param<double>("control_frequency", control_freq, 40.0);
     volta_base::voltaHardware volta(nh, private_nh, control_freq);
-    controller_manager::ControllerManager cm(&volta
-);
+    controller_manager::ControllerManager cm(&volta);
     ros::CallbackQueue queue;
     ros::AsyncSpinner spinner(1, &queue);
 
@@ -45,3 +44,14 @@ ROS_ERROR("Start -------------------------------------------");
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+

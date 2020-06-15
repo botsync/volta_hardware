@@ -34,6 +34,8 @@ set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11;")
 add_library(volta_hardware src/volta_hardware.cpp)
 add_executable(volta_base src/volta_base.cpp)
 target_link_libraries(volta_base volta_hardware ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(rpmSend src/rpmSend.cpp)
+target_link_libraries(rpmSend volta_hardware ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 install(
   DIRECTORY include src
