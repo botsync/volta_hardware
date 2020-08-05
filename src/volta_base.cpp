@@ -1,4 +1,4 @@
-#include <volta_hardware/volta_hardware.h>
+#include <volta_base/volta_hardware.h>
 #include <controller_manager/controller_manager.h>
 #include <ros/callback_queue.h>
 

@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <package>
-  <name>volta_hardware</name>
-  <version>0.0.0</version>
-
+  <name>volta_base</name>
+  <version>6.0.0</version>
   <description>The volta_base package</description>
-  <maintainer email="mahendra.l@botsync.co">Mahendra L Seervi</maintainer>
-  <license>BSD</license>
-  <author email="nikhil@botsync.sg">Nikhil Venkatesh</author>
 
+  <maintainer email="nikhil@botsync.sg">Nikhil</maintainer>
+  <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>

@@ -58,10 +58,10 @@ void voltaHardware::update_encoder_readings_to_joints() {
     rpm_left 	=	(double)this -> subMotorRPMLeft;
     rpm_right 	= 	(double)this -> subMotorRPMRight;
 
-//	if(rpm_left >0 || rpm_right >0)
-//	{
+	if(rpm_left >0 || rpm_right >0)
+	{
     	//ROS_ERROR("GET RPM left: %lf, RPM right: %lf", rpm_left, rpm_right);
-//	}
+	}
     double left, right;
     left = this->convert_rpm_to_radians(rpm_left);
     right = this->convert_rpm_to_radians(rpm_right);
@@ -91,13 +91,13 @@ void voltaHardware::send_velocity_to_motors_from_joints()
 
 	rpm.right=rpm_right;
 	rpm.left = rpm_left;
-//	if(rpm.left > 0 || rpm.right >0)
-//	{
+	if(rpm.left > 0 || rpm.right >0)
+	{
 //	double nsecTemp = (double)ros::Time::now().toNSec();
 //	double secTemp = (double)ros::Time::now().toSec();
 //	ROS_ERROR("CURRENT TIME %lf and %lf",secTemp,nsecTemp);
 //	ROS_ERROR("SET RPM left: %d, RPM right: %d", rpm_right, rpm_right);
-//	}
+	}
 	this->rpm_pub.publish(rpm);
 
 }

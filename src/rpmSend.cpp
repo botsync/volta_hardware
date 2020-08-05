@@ -1,11 +1,12 @@
 #include <ros/ros.h>
-#include "volta_msgs/RPM.h"
+
 #include "std_msgs/Bool.h"
 // C library headers
 #include <stdio.h>
 #include <string.h>
 #include "stdlib.h"
-#include "stdbool.h" 
+#include "stdbool.h"
+#include "time.h"
 // Linux headers
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <errno.h> // Error integer and strerror() function
@@ -13,54 +14,57 @@
 #include <unistd.h> // write(), read(), close()#include "std_msgs/Int16.h"
 
 
-#define ROS_ESTOP "ROS_ES"
-#define DIAG_ENABLE "DIAG_EN"
+#include "volta_base/can_monitor.h"
+#include "volta_base/queue.h"
+#include "volta_base/tableToRos.h"
+#include "volta_base/constants.h"
+#include "volta_base/voltaDataStruct.h"
+#include "volta_base/conversion.h"
 
-bool rpmData=false;
+
+
+const uint8_t initSequence[5]={'F','F','F','F','F'};
+const uint8_t endSequence[5]={'E','E','E','E','E'};
+
+
+
+
 bool estopData=false;
 bool estopStatus=false;
-bool diagEnData=false;
-bool diagEnStatus= false;
+bool wifiData=false;
+bool wifiStatus= false;
+
+uint8_t incomplete[200];
+uint8_t incompleteSize=0;
+bool foundIncomplete=false;
+
+uint8_t checkSum(char *buff);
+void findData(uint8_t *data , uint8_t size);
+uint8_t findsequence(uint8_t* data,uint8_t size);
+void dataClear(uint8_t * data,uint8_t size);
 
 int16_t subMotorRPMRight=0;
 int16_t subMotorRPMLeft=0;
+uint8_t rpmAvailable = false;
 
-uint8_t checkSum(char *buff);
 
-void rpmCallback(const volta_msgs::RPM::ConstPtr& rpmTemp) {
-  //ROS_INFO("data received \n");
-  subMotorRPMLeft= rpmTemp->left;
-  subMotorRPMRight= rpmTemp->right;
-}
-void estopCallback(const std_msgs::Bool& e_stop_msg)
+int main(int argc, char *argv[])
 {
-	estopData=true;
-	estopStatus = e_stop_msg.data;
-}
-void diagEnCallback(const std_msgs::Bool& diagEn_msg)
-{
-	diagEnData=true;
-	diagEnStatus =  diagEn_msg.data;
-}
-int main(int argc, char *argv[]) 
-{
-	ros::init(argc,argv,"rpm_test");
+	ros::init(argc,argv,"can_serial");
 	ROS_ERROR("START\n");
-	ros::NodeHandle nh;
-	ros::Subscriber rpm_sub = nh.subscribe("RPM_PUB",100,&rpmCallback);
-	ros::Publisher rpm_pub = nh.advertise<volta_msgs::RPM>("RPM_SUB", 100);
-	ros::Subscriber estop_sub = nh.subscribe("e_stop_sw_enable",100,&estopCallback);
-	ros::Subscriber diagEn_sub=nh.subscribe("volta_diag_enable",100,&diagEnCallback);
-	ros::Rate rate(20);
-	volta_msgs::RPM rpm;
-	int serial_port = open("/dev/mcu", O_RDWR);
+
+	rosTopicInit();
+
+
+	ros::Rate rate(100);
+	int serial_port = open("/dev/ttyUSB0", O_RDWR);
 
 	// Create new termios struc, we call it 'tty' for convention
 	struct termios tty;
 	memset(&tty, 0, sizeof tty);
 
 	// Read in existing settings, and handle any error
-	if(tcgetattr(serial_port, &tty) != 0) 
+	if(tcgetattr(serial_port, &tty) != 0)
 	{
     		ROS_ERROR("Error %i from tcgetattr: %s\n", errno, strerror(errno));
 	}
@@ -92,55 +96,96 @@ int main(int argc, char *argv[])
 	cfsetospeed(&tty, B115200);
 
 	// Save tty settings, also checking for error
-	if (tcsetattr(serial_port, TCSANOW, &tty) != 0) 
+	if (tcsetattr(serial_port, TCSANOW, &tty) != 0)
 	{
     		ROS_ERROR("Error %i from tcsetattr: %s\n", errno, strerror(errno));
 	}
 	//sleep(2); //required to make flush work, for some reason
   	tcflush(serial_port,TCIOFLUSH);
-	char msg[100] ="";
-	char buf[100]="";
+	uint8_t msg[100] ="";
+	uint8_t buf[50]="";
+	uint8_t msgSize =0;
 	char front;
 	char back;
 	char dataIn[200]="";
 	int data1;
 	int data2;
-	char read_buf[100]="";
+	uint8_t read_buf[200]="";
 	uint8_t readSum=0;
-
+	ROS_ERROR("WORKING HERE");
 	while(ros::ok())
 	{
 		ros::spinOnce();
 		//ROS_ERROR("WORKING HERE");
-		//ROS_INFO_STREAM("rpms :" << "left " << subMotorRPMLeft << "right" << subMotorRPMRight);
+
 		rate.sleep();
 		// Write to serial port
-		if(estopData)
-		{
-			estopData = false;
-			sprintf(msg,"$ %s %d %d",ROS_ESTOP,estopStatus == true ? 1 : 0,0);
-			uint8_t sum = checkSum(msg);
-			sprintf(msg,"$ %s %d %d %hhu \n",ROS_ESTOP,estopStatus == true ? 1 : 0,0,sum);
-			write(serial_port,msg, strlen(msg));
-		}
-		else if(diagEnData)
-		{
-			diagEnData=false;
-			sprintf(msg,"$ %s %d %d",DIAG_ENABLE,diagEnStatus == true ? 1 : 0,0);
-			uint8_t sum = checkSum(msg);
-			sprintf(msg,"$ %s %d %d %hhu \n",DIAG_ENABLE,diagEnStatus == true ? 1 : 0,0,sum);
-			write(serial_port,msg, strlen(msg));
-		}
-		else
-		{
-//			ROS_ERROR("SENDING");
-			sprintf(msg,"$ RPM %d %d",subMotorRPMLeft,subMotorRPMRight);
-			uint8_t sum = checkSum(msg);
-			sprintf(msg,"$ RPM %d %d %hhu \n",subMotorRPMLeft,subMotorRPMRight,sum);
-			write(serial_port,msg, strlen(msg));
-		}
-
 		// Allocate memory for read buffer, set size according to your needs
+		if(rpmAvailable == true)
+		{
+			msgSize=10;
+			uint8_t tempCount=0;
+			rpmAvailable = false;
+			uint8_t tempData[20] = "";
+			rpm_status.left = subMotorRPMLeft;
+			rpm_status.right = subMotorRPMRight;
+			tempData[0] = PRIORITY_RPM;
+			tempData[1] = 0x00;
+			tempData[2] = 5;
+			tempData[3] = 0x00;
+
+			short2Bytes(tempData+4,subMotorRPMLeft);
+			short2Bytes(tempData+6,subMotorRPMRight);
+			msgSize+=(tempData[2]+3);
+			for(tempCount=0;tempCount<5; tempCount++)
+			{
+				msg[tempCount]	='F';
+			}
+			for(int i=0 ;i < (tempData[2]+3) ; i++ , tempCount++)
+			{
+				msg[tempCount] = tempData[i];
+			}
+			for(int i=0 ;i < 5 ; i++,tempCount++)
+			{
+				msg[tempCount]	='E';
+			}
+			write(serial_port,msg, msgSize);
+		}
+		if(queue_Count(1) >0)
+		{
+			msgSize=10;
+			uint8_t tempCount=0;
+
+			queue_dataGet(buf,1);
+			msgSize+=(buf[2]+3);
+			for(tempCount=0;tempCount<5; tempCount++)
+			{
+				msg[tempCount]	='F';
+			}
+			for(int i=0 ;i < (buf[2]+3) ; i++ , tempCount++)
+			{
+				msg[tempCount] = buf[i];
+			}
+			for(int i=0 ;i < 5 ; i++,tempCount++)
+			{
+				msg[tempCount]	='E';
+			}
+
+			/*char tempBuff[20];
+			char prinfbuff[1000];
+			memset(prinfbuff,0,1000);
+			for(int i=0;i< msgSize ;i++)
+			{
+				sprintf(tempBuff," %x",msg[i]);
+				strcat(prinfbuff,tempBuff);
+			}
+			strcat(prinfbuff,"\n");
+			ROS_ERROR("write message: %s", prinfbuff);
+			*/
+
+			write(serial_port,msg, msgSize);
+
+		}
 		memset(&read_buf, '\0', sizeof(read_buf));
 
 		// Read bytes. The behaviour of read() (e.g. does it block?,
@@ -149,7 +194,7 @@ int main(int argc, char *argv[])
 		int num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
 
 		// n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
-		if (num_bytes < 0) 
+		if (num_bytes < 0)
 		{
     			ROS_ERROR("Error reading: %s", strerror(errno));
 		}
@@ -158,31 +203,20 @@ int main(int argc, char *argv[])
 		// print it to the screen like this!)
 		if(num_bytes > 0)
 		{
-//			ROS_ERROR("Read %i bytes. Received message: %s", num_bytes, read_buf);
-			if(strchr(read_buf,'$') != NULL && strchr(read_buf,'\n') != NULL)
-			{
-				sscanf(read_buf,"%c %s %d %d %hhu %c",&front,dataIn,&data1,&data2,&readSum,&back);
-				sprintf(buf,"%c %s %d %d",front,dataIn,data1,data2);
-				if(checkSum(buf) == readSum)
-				{
-					if(strcmp(dataIn,"RPM") == 0)
-					{
-						rpm.left = data1;
-						rpm.right = data2;
-						rpm_pub.publish(rpm);
-					}
-				}
-				else
-				{
-				//ROS_ERROR("checksum failed %s",read_buf);
-				}
-			}
-			else
-			{
-				ROS_ERROR("Read %i bytes. Received message: %s", num_bytes, read_buf);
-			}
-			num_bytes =0;
+				// char tempBuff[20];
+				// char prinfbuff[1000];
+				// memset(prinfbuff,0,1000);
+				// for(int i=0;i< num_bytes ;i++)
+				// {
+				// 	sprintf(tempBuff," %x",read_buf[i]);
+				// 	strcat(prinfbuff,tempBuff);
+				// }
+				// strcat(prinfbuff,"\n");
+				// ROS_ERROR("combined %i bytes. Received message: %s", num_bytes, prinfbuff);
+        //
+			findData(read_buf,num_bytes);
 		}
+
 	}
 }
 uint8_t checkSum(char *buff)
@@ -192,6 +226,157 @@ uint8_t checkSum(char *buff)
 	for(int i =0 ;i < len ; i++)
 	{
 		sum +=buff[i];
-	}	
+	}
 	return sum;
+}
+void findData(uint8_t *data , uint8_t size)
+{
+	uint8_t tempData[200];
+	if(foundIncomplete == false)
+	{
+		for(int i=0; i< size ; i++)
+		{
+			tempData[i] = data[i];
+		}
+	}
+	else
+	{
+		foundIncomplete = false;
+		uint8_t count =0;
+		for(count = 0; count <incompleteSize;count++ )
+		{
+			tempData[count] = incomplete[count];
+		}
+		for(int i=0;i<size ; i++,count++)
+		{
+			tempData[count] = data[i];
+		}
+		size+=incompleteSize;
+	}
+
+	/*char tempBuff[20];
+	char prinfbuff[1000];
+	memset(prinfbuff,0,1000);
+	for(int i=0;i< size ;i++)
+	{
+		sprintf(tempBuff," %x",tempData[i]);
+		strcat(prinfbuff,tempBuff);
+	}
+	strcat(prinfbuff,"\n");
+	ROS_ERROR("combined %i bytes. Received message: %s", size, prinfbuff);
+	* */
+
+	uint8_t  dataOccurance=1;
+	while(dataOccurance !=0)
+	{
+		dataOccurance = findsequence(tempData,size);
+		if(dataOccurance >0)
+		{
+			//ROS_ERROR("dataOccurance %d", dataOccurance);
+			/*char tempBuff[20];
+			char prinfbuff[1000];
+			memset(prinfbuff,0,1000);
+			for(int i=0;i< (tempData[dataOccurance+2]+3) ;i++)
+			{
+				sprintf(tempBuff," %x",tempData[dataOccurance+i]);
+				strcat(prinfbuff,tempBuff);
+			}
+			strcat(prinfbuff,"\n");
+			ROS_ERROR("occurance %d Received message: %s",dataOccurance, prinfbuff);
+			* */
+
+			uint16_t topicId = ((uint16_t)(tempData[dataOccurance]&0x00ff) << 8);
+			topicId |= tempData[dataOccurance+1];
+			volta_data_callBack(tempData+dataOccurance);
+			dataClear(tempData,dataOccurance+10+3+tempData[dataOccurance+2]-5);
+
+		}
+		else
+		{
+			uint8_t dataLocation = 0;
+			bool dataFound=false;
+			incompleteSize=0;
+			for(int i=0;i< size ;i++)
+			{
+
+				if(tempData[i] > 0)
+				{
+					dataFound =true;
+					dataLocation=i;
+					break;
+				}
+			}
+			if(dataFound >0)
+			{
+				foundIncomplete = true;
+				for(int i=0;i<size-dataLocation;i++)
+				{
+					incomplete[i] = tempData[i+dataLocation];
+					incompleteSize++;
+				}
+			}
+/*
+			memset(prinfbuff,0,1000);
+			for(int i=0;i< incompleteSize ;i++)
+			{
+				sprintf(tempBuff," %x",incomplete[i]);
+				strcat(prinfbuff,tempBuff);
+			}
+			strcat(prinfbuff,"\n");
+			ROS_ERROR("incomplete %i bytes. Received message: %s", incompleteSize, prinfbuff);
+*/
+
+		}
+	}
+}
+uint8_t findsequence(uint8_t* data,uint8_t size)
+{
+	uint8_t occurance = 0;
+	for(int i =0  ; i < size ; i++)
+	{
+		if(data[i] == 'F')
+		{
+			occurance = i+5;
+			uint8_t tempCount =0;
+			for(int j=0;j<5;j++,i++)
+			{
+				if(data[i] == 'F')
+				{
+					tempCount++;
+				}
+			}
+			if(tempCount == 5)
+			{
+				i+= data[i+2]+3;
+				for(int j=0;j<5;j++,i++)
+				{
+					if(data[i] == 'E')
+					{
+					tempCount++;
+					}
+				}
+				if(tempCount == 10)
+				{
+					return occurance;
+				}
+				else
+				{
+					i = occurance;
+					occurance = 0;
+				}
+			}
+			else
+			{
+					occurance = 0;
+			}
+		}
+	}
+return occurance;
+}
+void dataClear(uint8_t * data,uint8_t size)
+{
+	for(int i=0;i<size;i++)
+	{
+		data[i]=0;
+	}
 }

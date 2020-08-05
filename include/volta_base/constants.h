@@ -4,7 +4,7 @@
 
 #define MAX_RPM                     300
 #define MIN_RPM                     10
-#define LINEAR_SPEED_LIMIT          0.3
-#define ANGULAR_SPEED_LIMIT         1.0
-#define MOTOR_REDUCTION             1
-#define WHEEL_DIAMETER              0.068
+//#define LINEAR_SPEED_LIMIT          1.0
+//#define ANGULAR_SPEED_LIMIT         1.0
+//#define MOTOR_REDUCTION             1
+//#define WHEEL_DIAMETER              0.068
