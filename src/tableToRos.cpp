@@ -1,11 +1,11 @@
 #include <ros/ros.h>
-#include "volta_base/tableToRos.h"
-#include "volta_base/can_monitor.h"
-#include "volta_base/conversion.h"
+#include "volta_hardware/tableToRos.h"
+#include "volta_hardware/can_monitor.h"
+#include "volta_hardware/conversion.h"
 #include <iostream>
 #include <fstream>
 #include <volta_msgs/RPM.h>
-#include "volta_base/voltaDataStruct.h"
+#include "volta_hardware/voltaDataStruct.h"
 
 uint8_t rpmData=false;
 uint8_t estopData=false;

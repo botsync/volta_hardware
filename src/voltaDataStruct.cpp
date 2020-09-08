@@ -7,11 +7,11 @@
 
 #include <ros/ros.h>
 #include <string.h>
-#include "volta_base/voltaDataStruct.h"
-#include "volta_base/conversion.h"
+#include "volta_hardware/voltaDataStruct.h"
+#include "volta_hardware/conversion.h"
 #include "stdint.h"
-#include "volta_base/queue.h"
-#include "volta_base/tableToRos.h"
+#include "volta_hardware/queue.h"
+#include "volta_hardware/tableToRos.h"
 
 rpm_status_typedef rpm_status;
 rpm_status_typedef rpm_FB_status;

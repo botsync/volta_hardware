@@ -9,7 +9,7 @@
 #include <string>
 #include "sensor_msgs/JointState.h"
 
-#include <volta_base/constants.h>
+#include <volta_hardware/constants.h>
 
 
 #include "std_msgs/Int16.h"

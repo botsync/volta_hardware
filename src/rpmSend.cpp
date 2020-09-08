@@ -14,12 +14,12 @@
 #include <unistd.h> // write(), read(), close()#include "std_msgs/Int16.h"
 
 
-#include "volta_base/can_monitor.h"
-#include "volta_base/queue.h"
-#include "volta_base/tableToRos.h"
-#include "volta_base/constants.h"
-#include "volta_base/voltaDataStruct.h"
-#include "volta_base/conversion.h"
+#include "volta_hardware/can_monitor.h"
+#include "volta_hardware/queue.h"
+#include "volta_hardware/tableToRos.h"
+#include "volta_hardware/constants.h"
+#include "volta_hardware/voltaDataStruct.h"
+#include "volta_hardware/conversion.h"
 
 
 
@@ -51,7 +51,7 @@ uint8_t rpmAvailable = false;
 int main(int argc, char *argv[])
 {
 	ros::init(argc,argv,"can_serial");
-	ROS_ERROR("START\n");
+	ROS_DEBUG("START\n");
 
 	rosTopicInit();
 
@@ -112,11 +112,9 @@ int main(int argc, char *argv[])
 	int data2;
 	uint8_t read_buf[200]="";
 	uint8_t readSum=0;
-	ROS_ERROR("WORKING HERE");
 	while(ros::ok())
 	{
 		ros::spinOnce();
-		//ROS_ERROR("WORKING HERE");
 
 		rate.sleep();
 		// Write to serial port
@@ -171,18 +169,6 @@ int main(int argc, char *argv[])
 				msg[tempCount]	='E';
 			}
 
-			/*char tempBuff[20];
-			char prinfbuff[1000];
-			memset(prinfbuff,0,1000);
-			for(int i=0;i< msgSize ;i++)
-			{
-				sprintf(tempBuff," %x",msg[i]);
-				strcat(prinfbuff,tempBuff);
-			}
-			strcat(prinfbuff,"\n");
-			ROS_ERROR("write message: %s", prinfbuff);
-			*/
-
 			write(serial_port,msg, msgSize);
 
 		}
@@ -203,17 +189,6 @@ int main(int argc, char *argv[])
 		// print it to the screen like this!)
 		if(num_bytes > 0)
 		{
-				// char tempBuff[20];
-				// char prinfbuff[1000];
-				// memset(prinfbuff,0,1000);
-				// for(int i=0;i< num_bytes ;i++)
-				// {
-				// 	sprintf(tempBuff," %x",read_buf[i]);
-				// 	strcat(prinfbuff,tempBuff);
-				// }
-				// strcat(prinfbuff,"\n");
-				// ROS_ERROR("combined %i bytes. Received message: %s", num_bytes, prinfbuff);
-        //
 			findData(read_buf,num_bytes);
 		}
 
@@ -371,7 +346,7 @@ uint8_t findsequence(uint8_t* data,uint8_t size)
 			}
 		}
 	}
-return occurance;
+	return occurance;
 }
 void dataClear(uint8_t * data,uint8_t size)
 {

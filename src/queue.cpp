@@ -4,7 +4,7 @@
  *  Created on: 30-Mar-2020
  *      Author: james
  */
-#include "volta_base/queue.h"
+#include "volta_hardware/queue.h"
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"

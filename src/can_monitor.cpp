@@ -1,6 +1,6 @@
-#include "volta_base/can_monitor.h"
+#include "volta_hardware/can_monitor.h"
 #include "stdio.h"
-#include "volta_base/voltaDataStruct.h"
+#include "volta_hardware/voltaDataStruct.h"
 
 
 
