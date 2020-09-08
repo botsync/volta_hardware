@@ -13,8 +13,6 @@
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h> // write(), read(), close()#include "std_msgs/Int16.h"
 
-
-#include "volta_hardware/can_monitor.h"
 #include "volta_hardware/queue.h"
 #include "volta_hardware/tableToRos.h"
 #include "volta_hardware/constants.h"

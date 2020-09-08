@@ -24,8 +24,8 @@ voltaHardware::voltaHardware(ros::NodeHandle nh, ros::NodeHandle private_nh, dou
     pubMotorRPMRight=0;
     pubMotorRPMLeft=0;
 
-    this->rpm_pub = nh.advertise<volta_msgs::RPM>("RPM_PUB", 100);
-    this->rpm_sub = nh.subscribe("RPM_SUB", 100, &voltaHardware :: rpmCallback,this);
+    this->rpm_pub = nh.advertise<volta_msgs::RPM>("rpm_pub", 100);
+    this->rpm_sub = nh.subscribe("rpm_sub", 100, &voltaHardware :: rpmCallback,this);
     this->register_controllers();
 }
 
@@ -113,4 +113,3 @@ double voltaHardware::convert_radians_to_rpm(double radians) {
     return ret;
 }
 }
-

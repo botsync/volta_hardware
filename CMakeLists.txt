@@ -29,9 +29,7 @@ install(
 add_library(tableToRos
 	src/tableToRos.cpp
 )
-add_library(can_monitor
-	src/can_monitor.cpp
-)
+
 add_library(queue
 	src/queue.cpp
 )
@@ -43,8 +41,8 @@ add_library(voltaDataStruct
 	src/voltaDataStruct.cpp
 )
 add_library(volta_hardware src/volta_hardware.cpp)
-add_executable(volta_base src/volta_base.cpp)
-target_link_libraries(volta_base volta_hardware ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-add_executable(rpmSend src/rpmSend.cpp)
-target_link_libraries(rpmSend ${catkin_LIBRARIES})
-target_link_libraries(rpmSend tableToRos can_monitor queue voltaDataStruct conversion ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(volta_hardware_node src/volta_hardware_node.cpp)
+target_link_libraries(volta_hardware_node volta_hardware ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(serial_node src/serialMain.cpp)
+target_link_libraries(serial_node ${catkin_LIBRARIES})
+target_link_libraries(serial_node tableToRos queue voltaDataStruct conversion ${catkin_LIBRARIES} ${Boost_LIBRARIES})

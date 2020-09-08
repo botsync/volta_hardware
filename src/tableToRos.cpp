@@ -1,10 +1,8 @@
 #include <ros/ros.h>
 #include "volta_hardware/tableToRos.h"
-#include "volta_hardware/can_monitor.h"
 #include "volta_hardware/conversion.h"
 #include <iostream>
 #include <fstream>
-#include <volta_msgs/RPM.h>
 #include "volta_hardware/voltaDataStruct.h"
 
 uint8_t rpmData=false;
@@ -23,19 +21,15 @@ ros::Subscriber estop_sub;
 ros::Subscriber diagEn_sub;
 ros::Publisher table_pub;
 ros::Subscriber   publishTable;
-volta_msgs::table table_msg;
+volta_msgs::Table table_msg;
 
 bool enable_publish = false;
 
 void rpmCallback(const volta_msgs::RPM::ConstPtr& rpmTemp) {
-	//ROS_INFO("data received \n");
 	subMotorRPMLeft= rpmTemp->left;
 	subMotorRPMRight= rpmTemp->right;
 	rpmAvailable = true;
-	//uint8_t tempData[10] = "";
-	//short2Bytes(tempData,subMotorRPMLeft);
-	//short2Bytes(tempData+2,subMotorRPMRight);
-	//volta_update_table(PRIORITY_RPM,0,tempData,4);
+
 }
 void estopCallback(const std_msgs::Bool& e_stop_msg)
 {
@@ -49,25 +43,21 @@ void diagEnCallback(const std_msgs::Bool& diagEn_msg)
 	ROS_INFO("diagEnCallback \n");
 	diagEnData=true;
 	diagEnStatus =  diagEn_msg.data;
+	enable_publish=diagEn_msg.data;
 	volta_update_table(PRIORITY_DIAG,DIAG_EN,&diagEnStatus,1);
 }
 
 
 void rosTopicInit(void)
 {
-
 	ros::NodeHandle nh;
-	rpm_sub 		= nh.subscribe("RPM_PUB",100,&rpmCallback);
-	rpm_pub 		= nh.advertise<volta_msgs::RPM>("RPM_SUB", 100);
+	rpm_sub 		= nh.subscribe("rpm_pub",100,&rpmCallback);
+	rpm_pub 		= nh.advertise<volta_msgs::RPM>("rpm_sub", 100);
 	estop_sub 		= nh.subscribe("e_stop_sw_enable",100,&estopCallback);
-	diagEn_sub		= nh.subscribe("volta_diag_enable",100,&diagEnCallback);
-	publishTable	= nh.subscribe("enable_table_publish",100,&tableCallback);
-	table_pub 		= nh.advertise<volta_msgs::table>("VOLTA_DIAG", 100);
+	diagEn_sub		= nh.subscribe("diag_enable",100,&diagEnCallback);
+	table_pub 		= nh.advertise<volta_msgs::Table>("diag", 100);
 }
-void tableCallback(const std_msgs::Bool& table_data)
-{
-	enable_publish= table_data.data;
-}
+
 void volta_update_RPM(int16_t left, int16_t right)
 {
 	volta_msgs::RPM rpm;
