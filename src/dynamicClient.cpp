@@ -17,14 +17,14 @@ int main(int argc, char *argv[]) {
     srv_req.config = conf;
     //srv_req.config = conf;
     ros::NodeHandle nh;
-    int i=0;
+//    int i=0;
     ros::Rate r(0.5);
     while (ros::ok()) {
-        ROS_ERROR("%d", i++);
+//        ROS_ERROR("%d", i++);
         if (ros::service::call("can_serial/set_parameters", srv_req, srv_resp)){
-            ROS_ERROR("service call success");
+            ROS_INFO("CAN service call successfully");
         } else {
-            ROS_ERROR("service call failed");
+            ROS_ERROR("CAN service call failed");
         }
         ros::spinOnce();
         r.sleep();

@@ -30,15 +30,15 @@ private:
 	ros::Time t;
 	uint8_t timeFlag;
 	int16_t prevRPMLeft,prevRPMRight;
-	int16_t	subMotorRPMRight,subMotorRPMLeft , pubMotorRPMRight,pubMotorRPMLeft;
+	float subMotorRPMRight,subMotorRPMLeft , pubMotorRPMRight,pubMotorRPMLeft;
 
 	ros::Publisher rpm_pub ;
 	ros::Subscriber rpm_sub ;
 
-    void set_speeds(double left, double right);
-    void limit_speeds(int16_t &left, int16_t &right);
-    double convert_rpm_to_radians(double rpm);
-    double convert_radians_to_rpm(double radians);
+    void set_speeds(float left, float right);
+    void limit_speeds(float &left,float &right);
+    double convert_rpm_to_radians(float rpm);
+    double convert_radians_to_rpm(float radians);
 
     hardware_interface::JointStateInterface joint_state_interface_;
     hardware_interface::VelocityJointInterface velocity_joint_interface_;

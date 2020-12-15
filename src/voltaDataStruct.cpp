@@ -13,30 +13,32 @@
 #include "volta_hardware/queue.h"
 #include "volta_hardware/tableToRos.h"
 
-rpm_status_typedef rpm_status;
-rpm_status_typedef rpm_FB_status;
-bms_status_typedef bms_status;
-diag_status_typedef diag_status;
+rpm_status_typedef rpm_status = {};
+rpm_status_typedef rpm_FB_status= {};
+bms_status_typedef bms_status= {};
+diag_status_typedef diag_status= {};
+speed_control_typedef speed_control={};
+
 void volta_default(void)
 {
-	rpm_status.left = 0;
-	rpm_status.right = 0;
+	rpm_status.left = 0.0;
+	rpm_status.right = 0.0;
 	rpm_status.en =0;
 }
 void volta_update_table(uint8_t table_id,uint8_t msg_id,uint8_t aData[],uint8_t size)
 {
 	uint8_t msgTemp[50];
 
-		msgTemp[0] = table_id;
-		msgTemp[1] = 0x00;
-		msgTemp[2] = size+1;
-		msgTemp[3] = msg_id;
-		for(int i = 0 ; i < size ; i++)
-		{
-			msgTemp[4+i] = aData[i];
-		}
-		volta_data_callBack(msgTemp);
-		queue_insert(msgTemp,1);
+	msgTemp[0] = table_id;
+	msgTemp[1] = 0x00;
+	msgTemp[2] = size+1;
+	msgTemp[3] = msg_id;
+	for(int i = 0 ; i < size ; i++)
+	{
+		msgTemp[4+i] = aData[i];
+	}
+	volta_data_callBack(msgTemp);
+	queue_insert(msgTemp,1);
 }
 void volta_data_callBack(uint8_t* data_in)
 {
@@ -63,24 +65,28 @@ void volta_data_callBack(uint8_t* data_in)
 		break;
 	case PRIORITY_BMS:
 		bmsDataHandler(data_in);
+		publish_bms();
 		break;
 	case PRIORITY_DIAG:
 		diagDataHandler(data_in);
 		publish_table();
 		break;
+	case PRIORITY_SP:
+		speedControlHandler(data_in);
+
 	}
 }
 
 void rpmDataHandler(uint8_t * data)
 {
-	bytes2short((data+4),&rpm_status.left);
-	bytes2short((data+6),&rpm_status.right);
+	bytes2Float((data+4),&rpm_status.left);
+	bytes2Float((data+8),&rpm_status.right);
 	rpm_status.en = 1;
 }
 void rpmFBDataHandler(uint8_t * data)
 {
-	bytes2short((data+4),&rpm_FB_status.left);
-	bytes2short((data+6),&rpm_FB_status.right);
+	bytes2Float((data+4),&rpm_FB_status.left);
+	bytes2Float((data+8),&rpm_FB_status.right);
 	rpm_FB_status.en = 1;
 }
 void bmsDataHandler(uint8_t * data)
@@ -150,5 +156,39 @@ void diagDataHandler(uint8_t * data)
 	case DIAG_ROS_ESTOP_STATE:
 		diag_status.ros_Estop_state = data[4];
 		break;
+	}
+}
+void speedControlHandler(uint8_t *data)
+{
+	switch(data[3])
+	{
+	case SP_KP1 :
+		bytes2Float((data+4),&speed_control.Kp1);
+		break;
+	case SP_KI1 :
+		bytes2Float((data+4),&speed_control.Ki1);
+		break;
+	case SP_KD1 :
+		bytes2Float((data+4),&speed_control.Kd1);
+		break;
+	case SP_KP2 :
+		bytes2Float((data+4),&speed_control.Kp2);
+		break;
+	case SP_KI2 :
+		bytes2Float((data+4),&speed_control.Ki2);
+		break;
+	case SP_KD2 :
+		bytes2Float((data+4),&speed_control.Kd2);
+		break;
+	case SP_SET :
+		speed_control.set = data[4];
+		break;
+	case SP_SAVE:
+		speed_control.save = data[4];
+		break;
+	case SP_RESET:
+		speed_control.reset= data[4];
+		break;
+
 	}
 }

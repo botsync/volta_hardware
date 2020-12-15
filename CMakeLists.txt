@@ -12,6 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   hardware_interface
   diagnostic_updater
+  dynamic_reconfigure
+)
+
+generate_dynamic_reconfigure_options(
+  cfg/volta_hardware.cfg
 )
 
 catkin_package(

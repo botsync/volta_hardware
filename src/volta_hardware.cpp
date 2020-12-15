@@ -4,9 +4,9 @@
 namespace volta_base {
 void voltaHardware :: rpmCallback(const volta_msgs::RPM::ConstPtr& rpmTemp)
 {
-  this -> subMotorRPMRight	= rpmTemp->right;
-  this -> subMotorRPMLeft	= rpmTemp->left;
-}
+  this -> subMotorRPMRight	= rpmTemp->right/24.0;
+  this -> subMotorRPMLeft	= rpmTemp->left/24.0;
+ }
 voltaHardware::voltaHardware(ros::NodeHandle nh, ros::NodeHandle private_nh, double target_control_freq) {
     this->nh_ = nh;
     this->private_nh_ = private_nh_;
@@ -18,8 +18,8 @@ voltaHardware::voltaHardware(ros::NodeHandle nh, ros::NodeHandle private_nh, dou
     timeFlag=0;
     prevRPMLeft=0;
     prevRPMRight=0;
-    subMotorRPMRight = 0;
-    subMotorRPMLeft = 0;
+    subMotorRPMRight = 0.0;
+    subMotorRPMLeft = 0.0;
 
     pubMotorRPMRight=0;
     pubMotorRPMLeft=0;
@@ -47,13 +47,14 @@ void voltaHardware::register_controllers() {
 }
 
 void voltaHardware::update_encoder_readings_to_joints() {
-    double rpm_left, rpm_right;
-    rpm_left 	=	(double)this -> subMotorRPMLeft;
-    rpm_right 	= 	(double)this -> subMotorRPMRight;
+    float rpm_left, rpm_right;
+    rpm_left 	=	(float)this -> subMotorRPMLeft;
+    rpm_right 	= 	(float)this -> subMotorRPMRight;
 
     double left, right;
     left = this->convert_rpm_to_radians(rpm_left);
     right = this->convert_rpm_to_radians(rpm_right);
+	//ROS_ERROR("RPM  : %lf R:%lf",rpm_left*24.0,rpm_right*24.0);
 
     for (int i=0; i<4; i++) {
         if (i%2 == 0) {
@@ -67,28 +68,28 @@ void voltaHardware::update_encoder_readings_to_joints() {
 void voltaHardware::send_velocity_to_motors_from_joints()
 {
    volta_msgs :: RPM rpm;
-   int16_t rpm_left, rpm_right;
+   float rpm_left, rpm_right;
 
    double left = this->joints_[0].velocity_command;
    double right = this->joints_[1].velocity_command;
 
-   rpm_left = (int16_t)convert_radians_to_rpm(left);
-   rpm_right = (int16_t)convert_radians_to_rpm(right);
+   rpm_left = convert_radians_to_rpm(left);
+   rpm_right = convert_radians_to_rpm(right);
 
    this->limit_speeds(rpm_left, rpm_right);
 
-   rpm.right=rpm_right;
-   rpm.left = rpm_left;
+   rpm.right= rpm_right * 24.0;
+   rpm.left = rpm_left * 24.0;
 
    this->rpm_pub.publish(rpm);
 
 }
 
-void voltaHardware::set_speeds(double left, double right) {
-    int16_t rpm_left, rpm_right;
+void voltaHardware::set_speeds(float left, float right) {
+    float  rpm_left, rpm_right;
 
-    rpm_left = (int16_t)convert_radians_to_rpm(left);
-    rpm_right = (int16_t)convert_radians_to_rpm(right);
+    rpm_left = convert_radians_to_rpm(left);
+    rpm_right = convert_radians_to_rpm(right);
 
     this->limit_speeds(rpm_left, rpm_right);
 }
@@ -96,19 +97,19 @@ void voltaHardware::set_speeds(double left, double right) {
 
 
 
-void voltaHardware::limit_speeds(int16_t &left, int16_t &right) {
+void voltaHardware::limit_speeds(float &left, float &right) {
     int16_t temp_max = std::max(std::abs(left), std::abs(right));
     if (temp_max > this->max_rpm_) {
-        left *= this->max_rpm_ / temp_max;
-        right *= this->max_rpm_ / temp_max;
+        left *= (float)(this->max_rpm_) / (float)temp_max;
+        right *= (float)(this->max_rpm_) / (float)temp_max;
     }
 }
 
-double voltaHardware::convert_rpm_to_radians(double rpm) {
+double voltaHardware::convert_rpm_to_radians(float rpm) {
     return (double)((rpm*2.0*PI)/(60.0));
 }
 
-double voltaHardware::convert_radians_to_rpm(double radians) {
+double voltaHardware::convert_radians_to_rpm(float radians) {
     double ret= (double)(radians*60.0)/(2.0*PI);
     return ret;
 }

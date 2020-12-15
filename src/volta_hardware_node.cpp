@@ -20,9 +20,9 @@ void controlLoop(volta_base::voltaHardware &volta, controller_manager::Controlle
 int main(int argc, char *argv[]) {
     ros::init(argc, argv, "volta_base");
     ros::NodeHandle nh, private_nh("~");
-    
+
     double control_freq;
-    private_nh.param<double>("control_frequency", control_freq, 40.0);
+    private_nh.param<double>("control_frequency", control_freq, 10.0);
     volta_base::voltaHardware volta(nh, private_nh, control_freq);
     controller_manager::ControllerManager cm(&volta);
     ros::CallbackQueue queue;
@@ -41,14 +41,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-

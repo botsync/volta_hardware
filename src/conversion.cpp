@@ -55,8 +55,12 @@ void unsignedshort2Bytes(uint8_t bytes_temp[2],uint16_t variable){
 }
 void bytes2Float(uint8_t bytes_temp[4],float *float_variable)
 {
-		float * temp = (float *) bytes_temp;
-		*float_variable = *temp;
+	union {
+		float a;
+		unsigned char bytes[4];
+	} thing;
+	memcpy(thing.bytes,bytes_temp, 4);
+	*float_variable = thing.a;
 }
 void bytes2int(uint8_t bytes_temp[4],int *variable)
 {
