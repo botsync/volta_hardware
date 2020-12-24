@@ -16,12 +16,12 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 generate_dynamic_reconfigure_options(
-  cfg/volta_hardware.cfg
+  cfg/controls.cfg
 )
 
 catkin_package(
 INCLUDE_DIRS include
-CATKIN_DEPENDS hardware_interface volta_msgs roscpp
+CATKIN_DEPENDS hardware_interface volta_msgs roscpp dynamic_reconfigure
 DEPENDS Boost )
 
 include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
@@ -49,5 +49,16 @@ add_library(volta_hardware src/volta_hardware.cpp)
 add_executable(volta_hardware_node src/volta_hardware_node.cpp)
 target_link_libraries(volta_hardware_node volta_hardware ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(serial_node src/serialMain.cpp)
-target_link_libraries(serial_node ${catkin_LIBRARIES})
 target_link_libraries(serial_node tableToRos queue voltaDataStruct conversion ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(serial_node ${PROJECT_NAME}_gencfg)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+		DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+		PATTERN ".svn" EXCLUDE
+		)
+
+install(TARGETS
+		volta_hardware_node
+		serial_node
+		RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+		)
