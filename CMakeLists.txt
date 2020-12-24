@@ -60,5 +60,12 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(TARGETS
 		volta_hardware_node
 		serial_node
+		tableToRos
+		queue
+		conversion
+		voltaDataStruct
+		volta_hardware
 		RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+		ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+		LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 		)
