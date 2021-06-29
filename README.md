@@ -10,5 +10,5 @@ ROS2 package to interface with Volta Hardware.
     - Exported as a plugin to be loaded by the controller manager 
 
 ## Maintainer Info
-1. Name: Nikhil Venkatesh, James Abraham, Sachin Devadiga, Venkat
+1. Name: Nikhil Venkatesh, James Abraham, Sachin Devadiga
 2. E-mail: [nikhil@botsync.co](mailto:nikhil@botsync.co)
