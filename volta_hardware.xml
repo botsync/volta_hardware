@@ -1,0 +1,7 @@
+<library path="volta_hardware">
+  <class name="volta_hardware/voltaHardware" type="volta_hardware::voltaHardware" base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Hardware interface for volta base
+    </description>
+  </class>
+</library>
