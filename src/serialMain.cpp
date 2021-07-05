@@ -19,6 +19,7 @@
 #include "volta_hardware/tableToRos.h"
 #include "volta_hardware/constants.h"
 #include "volta_hardware/voltaDataStruct.h"
+#include "volta_msgs/srv/pid.hpp"
 #include "volta_hardware/conversion.h"
 
 const uint8_t initSequence[5]={'F','F','F','F','F'};
@@ -42,62 +43,59 @@ float subMotorRPMRight=0;
 float subMotorRPMLeft=0;
 uint8_t rpmAvailable = false;
 
-/*
-
-void controlsCallback(volta_hardware::controlsConfig &config, uint32_t level)
+void controlsCallback(const std::shared_ptr<volta_msgs::srv::Pid::Request> request, 
+                      std::shared_ptr<volta_msgs::srv::Pid::Response> response)
 {
   uint8_t update;
   uint8_t data[10]="";
   float gain=0.0;
-  ROS_INFO("controls config updated");
-  if(config.Kp1 != speed_control.Kp1)
+
+  if(request->kp1 != speed_control.Kp1)
   {
-    speed_control.Kp1 = config.Kp1;
+    speed_control.Kp1 = request->kp1;
     float2Bytes(data,speed_control.Kp1);
     volta_update_table(PRIORITY_SP,SP_KP1,data,4);
   }
-  if(config.Ki1 != speed_control.Ki1)
+  if(request->ki1 != speed_control.Ki1)
   {
-    speed_control.Ki1 = config.Ki1;
+    speed_control.Ki1 = request->ki1;
     float2Bytes(data,speed_control.Ki1);
     volta_update_table(PRIORITY_SP,SP_KI1,data,4);
   }
- if(config.Kd1 != speed_control.Kd1)
+ if(request->kd1 != speed_control.Kd1)
   {
-    speed_control.Kd1 = config.Kd1;
+    speed_control.Kd1 = request->kd1;
     float2Bytes(data,speed_control.Kd1);
     volta_update_table(PRIORITY_SP,SP_KD1,data,4);
   }
-  if(config.Kp2 != speed_control.Kp2)
+  if(request->kp2 != speed_control.Kp2)
   {
-    speed_control.Kp2 = config.Kp2;
+    speed_control.Kp2 = request->kp2;
     float2Bytes(data,speed_control.Kp2);
     volta_update_table(PRIORITY_SP,SP_KP2,data,4);
   }
-  if(config.Ki2 != speed_control.Ki2)
+  if(request->ki2 != speed_control.Ki2)
   {
-    speed_control.Ki2 = config.Ki2;
+    speed_control.Ki2 = request->ki2;
     float2Bytes(data,speed_control.Ki2);
     volta_update_table(PRIORITY_SP,SP_KI2,data,4);
   }
- if(config.Kd2 != speed_control.Kd2)
+ if(request->kd2 != speed_control.Kd2)
   {
-    speed_control.Kd2 = config.Kd2;
+    speed_control.Kd2 = request->kd2;
     float2Bytes(data,speed_control.Kd2);
     volta_update_table(PRIORITY_SP,SP_KD2,data,4);
   }
 
-  data[0] = config.write_controls;
+  data[0] = request->write_controls;
   volta_update_table(PRIORITY_SP,SP_SET,data,1);
-
- data[0] = config.Save_to_eeprom;
+  
+  data[0] = request->save_to_eeprom;
   volta_update_table(PRIORITY_SP,SP_SAVE,data,1);
 
- data[0] = config.reset_pid;
+ data[0] = request->reset_pid;
   volta_update_table(PRIORITY_SP,SP_RESET,data,1);
 }
-
-*/
 
 int main(int argc, char *argv[])
 {
@@ -107,16 +105,9 @@ int main(int argc, char *argv[])
 
 	rosTopicInit(node);
 
-	/*
-	dynamic_reconfigure::Server<volta_hardware::controlsConfig> server;
-  	dynamic_reconfigure::Server<volta_hardware::controlsConfig>::CallbackType f;
-  	dynamic_reconfigure::ReconfigureRequest srv_req;
-  	dynamic_reconfigure::ReconfigureResponse srv_resp;
-  	dynamic_reconfigure::IntParameter double_param;
- 	dynamic_reconfigure::Config conf;
- 	f = boost::bind(&controlsCallback, _1, _2);
- 	server.setCallback(f);
-	 */
+	// Create the PID server 
+	rclcpp::Service<volta_msgs::srv::Pid>::SharedPtr PID_service = 
+    node->create_service<volta_msgs::srv::Pid>("volta_pid_service", &controlsCallback);
 
 	std::chrono::microseconds us{100};
 	int serial_port = open("/dev/mcu", O_RDWR|O_NONBLOCK);
