@@ -19,7 +19,6 @@ find_package(controller_manager REQUIRED)
 find_package(volta_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(tf2 REQUIRED)
@@ -65,10 +64,6 @@ add_executable(serial_node src/serialMain.cpp)
 ament_target_dependencies(serial_node rclcpp volta_msgs)
 target_link_libraries(serial_node tableToRos queue voltaDataStruct conversion ${Boost_LIBRARIES})
 
-add_executable(odom_test_node src/odom_test.cpp)
-ament_target_dependencies(odom_test_node rclcpp geometry_msgs nav_msgs tf2)
-target_link_libraries(odom_test_node ${Boost_LIBRARIES})
-
 pluginlib_export_plugin_description_file(hardware_interface volta_hardware.xml)
 
 install(DIRECTORY include
@@ -78,7 +73,6 @@ install(TARGETS
 		volta_hardware_node
 		volta_hardware_ROS
 		serial_node
-		odom_test_node
 		tableToRos
 		queue
 		conversion
