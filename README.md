@@ -13,7 +13,7 @@ ROS2 package to interface with Volta Hardware.
 ```
 $ ros2 service call /volta_pid_service volta_msgs/srv/Pid "{kp1: 0.23, ki1: 0.18, kd1: 0.002, kp2: 0.23, ki2: 0.18, kd2: 0.002, write_contros: True, save_to_eeprom: True, reset_pid: False}"
 ```
-    - Provide all the six PID values (kp1, ki1, kd1, kp2, ki2, kd), when calling the service, to ensure non zero value 
+   - Provide all the six PID values (kp1, ki1, kd1, kp2, ki2, kd), when calling the service, to ensure non zero value 
 
 ## Maintainer Info
 1. Name: Nikhil Venkatesh, James Abraham, Sachin Devadiga
