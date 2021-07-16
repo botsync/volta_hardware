@@ -16,6 +16,8 @@ $ ros2 service call /volta_pid_service volta_msgs/srv/Pid "{kp1: 0.23, ki1: 0.18
    - Provide all the six PID values (kp1, ki1, kd1, kp2, ki2, kd), when calling the service, to ensure non zero value 
 
 ## Incomplete work
+* Does not impact the Hardware package as it is not built in the CMakeLists
+
 * Tried changing approach of odom test by using feedback directly from odometry topic until the given distance is reached, to match with the distance moved in reality and RViz. Approach in ROS1 packages utilises running Volta for a certain time. The script is not fully functional as there are issues when trying to measure rotational odometry when converting from Quaternions to Euler
 
 ## Maintainer Info
