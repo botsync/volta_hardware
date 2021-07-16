@@ -63,9 +63,9 @@ void rosTopicInit(std::shared_ptr<rclcpp::Node>node)
 
 	rpm_pub=node->create_publisher<volta_msgs::msg::RPM>("rpm_sub", 100);
 
-	estop_sub=node->create_subscription<std_msgs::msg::Bool>("e_stop_sw_enable",100,[](std_msgs::msg::Bool::SharedPtr msg){estopCallback(msg);});
+	estop_sub=node->create_subscription<std_msgs::msg::Bool>("e_stop_sw_enable", 100, [](std_msgs::msg::Bool::SharedPtr msg){estopCallback(msg);});
 
-	diagEn_sub=node->create_subscription<std_msgs::msg::Bool>("diag_enable",100,[](std_msgs::msg::Bool::SharedPtr msg){diagEnCallback(msg);});
+	diagEn_sub=node->create_subscription<std_msgs::msg::Bool>("diag_enable", 100, [](std_msgs::msg::Bool::SharedPtr msg){diagEnCallback(msg);});
 
 	table_pub=node->create_publisher<volta_msgs::msg::Table>("diag", 100);
 
