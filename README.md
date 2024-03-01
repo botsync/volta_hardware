@@ -21,5 +21,4 @@ $ ros2 service call /volta_pid_service volta_msgs/srv/Pid "{kp1: 0.23, ki1: 0.18
 * Tried changing approach of odom test by using feedback directly from odometry topic until the given distance is reached, to match with the distance moved in reality and RViz. Approach in ROS1 packages utilises running Volta for a certain time. The script is not fully functional as there are issues when trying to measure rotational odometry when converting from Quaternions to Euler
 
 ## Maintainer Info
-1. Name: Nikhil Venkatesh, James Abraham, Sachin Devadiga
-2. E-mail: [nikhil@botsync.co](mailto:nikhil@botsync.co)
+1. E-mail: [contact@botsync.co](mailto:contact@botsync.co)
